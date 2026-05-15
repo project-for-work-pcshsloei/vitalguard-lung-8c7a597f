@@ -81,6 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Onco-Voice Expert" },
+      { name: "twitter:description", content: "ระบบคัดกรองความเสี่ยงมะเร็งปอดด้วย AI" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2f97f156-f8b4-4126-b7e6-14f400b29867/id-preview-d487b4bb--78c4a628-17ab-470c-a2ee-afd83d2ef5af.lovable.app-1778823439887.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2f97f156-f8b4-4126-b7e6-14f400b29867/id-preview-d487b4bb--78c4a628-17ab-470c-a2ee-afd83d2ef5af.lovable.app-1778823439887.png" },
     ],
     links: [
       {
