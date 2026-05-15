@@ -52,17 +52,17 @@
 }
 
 :root {
-  --radius: 0.875rem;
-  /* Calm Hospital Blue palette */
-  --background: oklch(0.985 0.012 235);
-  --foreground: oklch(0.22 0.04 250);
+  --radius: 1.5rem;
+  /* Modern Medical Minimalist — Cyan #06b6d4 + Purple #8b5cf6 */
+  --background: oklch(0.984 0.003 247.86); /* #F8FAFC */
+  --foreground: oklch(0.22 0.04 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 250);
+  --card-foreground: oklch(0.22 0.04 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 250);
-  --primary: oklch(0.55 0.14 240);
-  --primary-foreground: oklch(0.99 0.005 240);
-  --secondary: oklch(0.94 0.025 235);
+  --popover-foreground: oklch(0.22 0.04 260);
+  --primary: oklch(0.715 0.143 215.22); /* cyan-500 #06b6d4 */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 250);
   --secondary-foreground: oklch(0.3 0.06 250);
   --muted: oklch(0.95 0.015 235);
   --muted-foreground: oklch(0.5 0.03 250);
