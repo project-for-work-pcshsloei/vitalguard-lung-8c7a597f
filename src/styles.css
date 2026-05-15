@@ -52,17 +52,17 @@
 }
 
 :root {
-  --radius: 0.875rem;
-  /* Calm Hospital Blue palette */
-  --background: oklch(0.985 0.012 235);
-  --foreground: oklch(0.22 0.04 250);
+  --radius: 1.5rem;
+  /* Modern Medical Minimalist — Cyan #06b6d4 + Purple #8b5cf6 */
+  --background: oklch(0.984 0.003 247.86); /* #F8FAFC */
+  --foreground: oklch(0.22 0.04 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 250);
+  --card-foreground: oklch(0.22 0.04 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 250);
-  --primary: oklch(0.55 0.14 240);
-  --primary-foreground: oklch(0.99 0.005 240);
-  --secondary: oklch(0.94 0.025 235);
+  --popover-foreground: oklch(0.22 0.04 260);
+  --primary: oklch(0.715 0.143 215.22); /* cyan-500 #06b6d4 */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 250);
   --secondary-foreground: oklch(0.3 0.06 250);
   --muted: oklch(0.95 0.015 235);
   --muted-foreground: oklch(0.5 0.03 250);
@@ -81,10 +81,13 @@
   --danger: oklch(0.62 0.23 25);
   --danger-foreground: oklch(0.99 0 0);
 
-  --gradient-calm: linear-gradient(135deg, oklch(0.94 0.04 230), oklch(0.97 0.02 220));
-  --gradient-primary: linear-gradient(135deg, oklch(0.6 0.15 240), oklch(0.7 0.12 220));
-  --shadow-soft: 0 4px 20px -8px oklch(0.55 0.14 240 / 0.25);
-  --shadow-card: 0 2px 12px -4px oklch(0.4 0.08 240 / 0.12);
+  --gradient-calm: linear-gradient(135deg, oklch(0.95 0.04 220), oklch(0.96 0.04 295));
+  --gradient-primary: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  --gradient-soft: linear-gradient(135deg, oklch(0.97 0.025 215), oklch(0.97 0.03 295));
+  --shadow-soft: 0 8px 30px -10px oklch(0.6 0.18 260 / 0.18);
+  --shadow-card: 0 2px 16px -6px oklch(0.5 0.1 240 / 0.10);
+  --color-cyan: #06b6d4;
+  --color-purple: #8b5cf6;
 
   --chart-1: oklch(0.55 0.14 240);
   --chart-2: oklch(0.7 0.17 150);

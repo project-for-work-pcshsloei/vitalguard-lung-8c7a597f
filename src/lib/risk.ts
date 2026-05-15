@@ -63,13 +63,14 @@ export function calcRisk(input: AssessmentInput) {
   if (input.age >= 50) score += 5;
   if (input.age >= 65) score += 5;
 
-  // VOCs contribution
-  const benzene = vocs.Benzene ?? 0;
-  const pentane = vocs.Pentane ?? 0;
-  const total = (vocs.Benzene ?? 0) + (vocs.Pentane ?? 0) + (vocs.Acetone ?? 0) + (vocs.Toluene ?? 0);
-  score += Math.min(8, benzene * 0.4);
-  score += Math.min(5, pentane * 0.3);
-  score += Math.min(5, total * 0.05);
+  // VOCs contribution — based on threshold exceedance count
+  let vocPts = 0;
+  for (const [name, value] of Object.entries(vocs)) {
+    const s = vocStatus(name, value);
+    if (s === "elevated") vocPts += 2;
+    else if (s === "high") vocPts += 5;
+  }
+  score += Math.min(20, vocPts);
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
@@ -81,14 +82,45 @@ export function calcRisk(input: AssessmentInput) {
 }
 
 export function simulateVOCs(): Record<string, number> {
-  const r = (min: number, max: number) => Math.round((Math.random() * (max - min) + min) * 10) / 10;
+  const r = (min: number, max: number) => Math.round((Math.random() * (max - min) + min) * 100) / 100;
   return {
-    Benzene: r(0.5, 12),
-    Pentane: r(1, 15),
-    Acetone: r(2, 25),
-    Toluene: r(0.5, 10),
-    Isoprene: r(1, 8),
+    Benzene: r(0.02, 0.8),
+    Formaldehyde: r(0.01, 0.15),
+    Toluene: r(0.05, 1.2),
+    Acetone: r(0.3, 3.0),
+    Isoprene: r(0.05, 0.6),
+    Pentane: r(0.05, 0.8),
+    Hexanal: r(0.01, 0.4),
+    "2-Butanone": r(0.02, 0.5),
   };
+}
+
+export type VocStatus = "normal" | "elevated" | "high";
+export type VocMeta = {
+  unit: string;
+  thresholds: [number, number];
+  source: string;
+  iarc?: string;
+};
+
+export const VOC_META: Record<string, VocMeta> = {
+  Benzene:       { unit: "ppm", thresholds: [0.1, 0.5],   source: "ควันบุหรี่ / น้ำมันเชื้อเพลิง", iarc: "IARC กลุ่ม 1" },
+  Formaldehyde:  { unit: "ppm", thresholds: [0.05, 0.1],  source: "เฟอร์นิเจอร์ MDF / ควันบุหรี่",  iarc: "IARC กลุ่ม 1" },
+  Toluene:       { unit: "ppm", thresholds: [0.2, 1.0],   source: "ทินเนอร์ / สีทาบ้าน / โรงงาน" },
+  Acetone:       { unit: "ppm", thresholds: [0.8, 2.0],   source: "เมตาบอลิซึม / น้ำยาล้างเล็บ" },
+  Isoprene:      { unit: "ppm", thresholds: [0.2, 0.45],  source: "Biomarker มะเร็งปอด" },
+  Pentane:       { unit: "ppm", thresholds: [0.2, 0.5],   source: "Biomarker oxidative stress" },
+  Hexanal:       { unit: "ppm", thresholds: [0.05, 0.15], source: "Biomarker มะเร็งปอด (lipid peroxidation)" },
+  "2-Butanone":  { unit: "ppm", thresholds: [0.1, 0.3],   source: "Biomarker มะเร็งปอด" },
+};
+
+export function vocStatus(name: string, value: number): VocStatus {
+  const meta = VOC_META[name];
+  if (!meta) return "normal";
+  const [n, e] = meta.thresholds;
+  if (value <= n) return "normal";
+  if (value <= e) return "elevated";
+  return "high";
 }
 
 export const RISK_LABEL: Record<string, string> = {
