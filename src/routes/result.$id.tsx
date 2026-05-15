@@ -10,7 +10,7 @@ import {
   ShieldAlert, Stethoscope, Home, History as HistoryIcon, GraduationCap,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceArea, Tooltip, CartesianGrid } from "recharts";
-import { ENV_LABELS, HISTORY_LABELS, VOC_META, vocStatus } from "@/lib/risk";
+import { ENV_LABELS, HISTORY_LABELS, vocStatus } from "@/lib/risk";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/result/$id")({
