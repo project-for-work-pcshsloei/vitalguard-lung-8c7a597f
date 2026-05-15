@@ -63,13 +63,14 @@ export function calcRisk(input: AssessmentInput) {
   if (input.age >= 50) score += 5;
   if (input.age >= 65) score += 5;
 
-  // VOCs contribution
-  const benzene = vocs.Benzene ?? 0;
-  const pentane = vocs.Pentane ?? 0;
-  const total = (vocs.Benzene ?? 0) + (vocs.Pentane ?? 0) + (vocs.Acetone ?? 0) + (vocs.Toluene ?? 0);
-  score += Math.min(8, benzene * 0.4);
-  score += Math.min(5, pentane * 0.3);
-  score += Math.min(5, total * 0.05);
+  // VOCs contribution — based on threshold exceedance count
+  let vocPts = 0;
+  for (const [name, value] of Object.entries(vocs)) {
+    const s = vocStatus(name, value);
+    if (s === "elevated") vocPts += 2;
+    else if (s === "high") vocPts += 5;
+  }
+  score += Math.min(20, vocPts);
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
