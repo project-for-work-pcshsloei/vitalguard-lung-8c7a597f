@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssessmentRouteImport } from './routes/assessment'
@@ -19,6 +20,11 @@ import { Route as ResultIdRouteImport } from './routes/result.$id'
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/assessment': typeof AssessmentRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/result/$id': typeof ResultIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/assessment': typeof AssessmentRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/result/$id': typeof ResultIdRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/assessment': typeof AssessmentRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/result/$id': typeof ResultIdRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/assessment'
     | '/auth'
     | '/dashboard'
+    | '/history'
     | '/profile'
     | '/result/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assessment' | '/auth' | '/dashboard' | '/profile' | '/result/$id'
+  to:
+    | '/'
+    | '/assessment'
+    | '/auth'
+    | '/dashboard'
+    | '/history'
+    | '/profile'
+    | '/result/$id'
   id:
     | '__root__'
     | '/'
     | '/assessment'
     | '/auth'
     | '/dashboard'
+    | '/history'
     | '/profile'
     | '/result/$id'
   fileRoutesById: FileRoutesById
@@ -98,6 +116,7 @@ export interface RootRouteChildren {
   AssessmentRoute: typeof AssessmentRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  HistoryRoute: typeof HistoryRoute
   ProfileRoute: typeof ProfileRoute
   ResultIdRoute: typeof ResultIdRoute
 }
@@ -109,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssessmentRoute: AssessmentRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  HistoryRoute: HistoryRoute,
   ProfileRoute: ProfileRoute,
   ResultIdRoute: ResultIdRoute,
 }
