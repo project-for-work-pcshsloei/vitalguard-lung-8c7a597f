@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import {
-  AlertTriangle, Volume2, VolumeX, CheckCircle2, RefreshCw,
+  AlertTriangle, CheckCircle2, RefreshCw,
   User, Cigarette, Wind, Activity, TrendingUp, BookOpen, Sparkles,
   ShieldAlert, Stethoscope, Home, History as HistoryIcon, GraduationCap,
 } from "lucide-react";
@@ -35,7 +35,7 @@ type Rec = {
   symptoms: Symptoms;
 };
 
-type Profile = { full_name: string | null; gender: string | null; birth_date: string | null };
+type Profile = { full_name: string | null; gender: string | null; age?: number | null };
 
 const SMOKING_LABEL: Record<string, string> = {
   never: "ไม่เคยสูบ", current: "ยังสูบอยู่", former: "เคยสูบ (เลิกแล้ว)",
@@ -87,7 +87,6 @@ function ResultPage() {
   const [rec, setRec] = useState<Rec | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [history, setHistory] = useState<{ name: string; score: number }[]>([]);
-  const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -98,28 +97,11 @@ function ResultPage() {
     supabase.from("health_records").select("*").eq("id", id).maybeSingle().then(({ data }) => {
       if (data) setRec(data as unknown as Rec);
     });
-    supabase.from("profiles").select("full_name,gender,birth_date").eq("id", user.id).maybeSingle()
+    supabase.from("profiles").select("full_name,gender,age").eq("id", user.id).maybeSingle()
       .then(({ data }) => setProfile(data as Profile));
     supabase.from("health_records").select("created_at,risk_score").eq("user_id", user.id).order("created_at", { ascending: true }).limit(20)
       .then(({ data }) => setHistory((data ?? []).map((r, i) => ({ name: `#${i + 1}`, score: Number(r.risk_score) }))));
   }, [id, user]);
-
-  const speak = (text: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      return;
-    }
-    const u = new SpeechSynthesisUtterance(text.replace(/\*\*/g, "").replace(/\[|\]/g, ""));
-    u.lang = "th-TH"; u.rate = 0.85; u.pitch = 0.9;
-    u.onend = () => setSpeaking(false);
-    u.onerror = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.speak(u);
-  };
-
-  useEffect(() => () => { if (typeof window !== "undefined") window.speechSynthesis?.cancel(); }, []);
 
   const breakdown = useMemo(() => rec ? buildBreakdown(rec.symptoms, rec.voc_values) : [], [rec]);
 
@@ -148,7 +130,7 @@ function ResultPage() {
   const dash = (score / 100) * circ;
 
   // Age
-  const age = rec.symptoms?.age ?? (profile?.birth_date ? new Date().getFullYear() - new Date(profile.birth_date).getFullYear() : null);
+  const age = rec.symptoms?.age ?? (profile?.age ?? null);
   const genderLabel = profile?.gender === "male" ? "ชาย" : profile?.gender === "female" ? "หญิง" : "ไม่ระบุ";
 
   // Immediate advice based on level
@@ -178,15 +160,7 @@ function ResultPage() {
   ];
 
   // Split AI analysis into 3 sections
-  const ai = rec.ai_analysis ?? "";
-  const sec = (key: string) => {
-    const re = new RegExp(`\\*\\*\\[${key}\\]\\*\\*([\\s\\S]*?)(?=\\*\\*\\[|$)`, "m");
-    const m = ai.match(re);
-    return m?.[1]?.trim() ?? "";
-  };
-  const aiCurrent = sec("ผลปัจจุบัน") || ai.slice(0, 300);
-  const aiResearch = sec("ความรู้จากงานวิจัย");
-  const aiAdvice = sec("คำแนะนำ");
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -342,47 +316,11 @@ function ResultPage() {
 
           {/* Detailed AI Analysis: 3 columns */}
           <Card>
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <CardTitle icon={Sparkles} title="วิเคราะห์เชิงลึกโดย AI (Onco-Voice Expert)" inline />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => ai && speak(ai)}
-                className="rounded-full"
-              >
-                {speaking ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4" />}
-                {speaking ? "หยุดอ่าน" : "ฟังเสียง"}
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <AnalysisCol
-                title="ผลปัจจุบัน"
-                icon={Stethoscope}
-                tone="orange"
-                content={aiCurrent || "—"}
-              />
-              <AnalysisCol
-                title="ความรู้จากงานวิจัย"
-                icon={BookOpen}
-                tone="white"
-                content={aiResearch || "—"}
-              />
-              <AnalysisCol
-                title="แนวโน้ม & คำแนะนำ"
-                icon={TrendingUp}
-                tone="gray"
-                content={aiAdvice || "—"}
-              />
-            </div>
-
-            {history.length > 1 && (
-              <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">แนวโน้มคะแนนความเสี่ยง</span>
-                </div>
-                <div className="h-56">
-                  <ResponsiveContainer>
+            <CardTitle icon={Sparkles} title="วิเคราะห์เชิงลึกโดย AI (VitalGuard Expert)" />
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+              {history.length > 1 ? (
+                <div className="h-[360px] w-full sm:h-[420px]">
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={history} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                       <ReferenceArea y1={0} y2={30} fill="#16a34a" fillOpacity={0.06} />
@@ -395,8 +333,10 @@ function ResultPage() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-slate-500">ยังไม่มีประวัติเพียงพอสำหรับแสดงกราฟ</p>
+              )}
+            </div>
           </Card>
 
           {/* Disclaimer */}
@@ -462,32 +402,6 @@ function Zone({ label, range, color, active }: { label: string; range: string; c
       style={active ? { borderColor: color, background: `${color}10` } : undefined}>
       <div className="font-semibold" style={{ color }}>{label}</div>
       <div className="text-slate-500">{range}</div>
-    </div>
-  );
-}
-
-function AnalysisCol({
-  title, icon: Icon, tone, content,
-}: { title: string; icon: React.ComponentType<{ className?: string }>; tone: "orange" | "white" | "gray"; content: string }) {
-  const styles = {
-    orange: "bg-orange-50 border-orange-200",
-    white: "bg-white border-slate-200",
-    gray: "bg-slate-100 border-slate-200",
-  }[tone];
-  const iconColor = {
-    orange: "text-orange-600 bg-orange-100",
-    white: "text-blue-600 bg-blue-50",
-    gray: "text-slate-600 bg-slate-200",
-  }[tone];
-  return (
-    <div className={cn("rounded-2xl border p-4 h-full", styles)}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className={cn("grid h-7 w-7 place-items-center rounded-lg", iconColor)}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <h4 className="font-bold text-slate-800">{title}</h4>
-      </div>
-      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{content}</p>
     </div>
   );
 }

@@ -10,23 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [{ title: "โปรไฟล์ — Onco-Voice Expert" }] }),
+  head: () => ({ meta: [{ title: "โปรไฟล์ — VitalGuard Expert" }] }),
   component: ProfilePage,
 });
-
-function calcAge(d: string) {
-  if (!d) return "";
-  const b = new Date(d);
-  const diff = Date.now() - b.getTime();
-  const age = new Date(diff).getUTCFullYear() - 1970;
-  return age >= 0 ? `${age} ปี` : "";
-}
 
 function ProfilePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [age, setAge] = useState<number | "">("");
   const [gender, setGender] = useState("");
   const [busy, setBusy] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -40,7 +32,7 @@ function ProfilePage() {
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => {
       if (data) {
         setFullName(data.full_name ?? "");
-        setBirthDate(data.birth_date ?? "");
+        setAge(data.age ?? "");
         setGender(data.gender ?? "");
       }
       setInitialLoad(false);
@@ -55,7 +47,7 @@ function ProfilePage() {
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
       full_name: fullName,
-      birth_date: birthDate || null,
+      age: age || null,
       gender: gender || null,
       updated_at: new Date().toISOString(),
     });
@@ -83,9 +75,9 @@ function ProfilePage() {
             <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1.5" placeholder="เช่น สมชาย ใจดี" />
           </div>
           <div>
-            <Label htmlFor="bd">วันเกิด</Label>
-            <Input id="bd" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="mt-1.5" />
-            {birthDate && <p className="mt-1 text-sm text-muted-foreground">อายุ: {calcAge(birthDate)}</p>}
+            <Label htmlFor="age">อายุ (ปี)</Label>
+            <Input id="age" type="number" value={age as any} onChange={(e) => setAge(e.target.value ? Number(e.target.value) : "")} className="mt-1.5" />
+            <p className="mt-1 text-sm text-muted-foreground">กรุณากรอกอายุเพื่อใช้ในการประเมิน</p>
           </div>
           <div>
             <Label>เพศ</Label>

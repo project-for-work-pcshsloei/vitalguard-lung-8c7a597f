@@ -81,18 +81,92 @@ export function calcRisk(input: AssessmentInput) {
   return { score, level, packYears };
 }
 
+function randomValue(min: number, max: number) {
+  return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+}
+
+function shuffle<T>(arr: T[]) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 export function simulateVOCs(): Record<string, number> {
-  const r = (min: number, max: number) => Math.round((Math.random() * (max - min) + min) * 100) / 100;
-  return {
-    Benzene: r(0.02, 0.8),
-    Formaldehyde: r(0.01, 0.15),
-    Toluene: r(0.05, 1.2),
-    Acetone: r(0.3, 3.0),
-    Isoprene: r(0.05, 0.6),
-    Pentane: r(0.05, 0.8),
-    Hexanal: r(0.01, 0.4),
-    "2-Butanone": r(0.02, 0.5),
-  };
+  const keys = Object.keys(VOC_META);
+  const out: Record<string, number> = {};
+  const normalCount = Math.max(4, Math.round(keys.length * 0.6));
+  const normalSensors = new Set(shuffle(keys).slice(0, normalCount));
+
+  for (const k of keys) {
+    const [n, e] = VOC_META[k].thresholds;
+    if (normalSensors.has(k)) {
+      // mostly normal, but allow mild elevation in some cases
+      const choose = Math.random();
+      if (choose < 0.85) {
+        out[k] = randomValue(0, Math.max(0.001, n * 0.9));
+      } else {
+        out[k] = randomValue(n * 0.95, Math.min(e * 0.95, e));
+      }
+    } else {
+      // more elevated/high values for the remaining sensors
+      const choose = Math.random();
+      if (choose < 0.5) {
+        out[k] = randomValue(n * 0.95, Math.min(e * 0.95, e));
+      } else {
+        out[k] = randomValue(e * 1.0, e * 1.3);
+      }
+    }
+  }
+  return out;
+}
+
+export function simulateVOCsNormal(): Record<string, number> {
+  const keys = Object.keys(VOC_META);
+  const out: Record<string, number> = {};
+  const elevatedCount = Math.min(3, Math.max(1, Math.round(Math.random() * 3)));
+  const elevatedSensors = new Set(shuffle(keys).slice(0, elevatedCount));
+
+  for (const [k, m] of Object.entries(VOC_META)) {
+    const [n, e] = m.thresholds;
+    if (elevatedSensors.has(k)) {
+      const choice = Math.random();
+      if (choice < 0.7) {
+        out[k] = randomValue(n * 1.02, Math.min(e * 0.85, e));
+      } else {
+        out[k] = randomValue(Math.max(e * 0.9, n * 1.01), e * 1.05);
+      }
+    } else {
+      out[k] = randomValue(0, Math.max(0.001, n * 0.9));
+    }
+  }
+  return out;
+}
+
+export function simulateVOCsRisk(): Record<string, number> {
+  const keys = Object.keys(VOC_META);
+  const out: Record<string, number> = {};
+  const normalCount = Math.max(2, Math.round(Math.random() * 4));
+  const normalSensors = new Set(shuffle(keys).slice(0, normalCount));
+
+  for (const [k, m] of Object.entries(VOC_META)) {
+    const [n, e] = m.thresholds;
+    if (normalSensors.has(k)) {
+      out[k] = randomValue(0, Math.max(0.001, n * 0.9));
+    } else {
+      const choice = Math.random();
+      if (choice < 0.35) {
+        out[k] = randomValue(n * 1.05, Math.min(e * 0.95, e));
+      } else if (choice < 0.75) {
+        out[k] = randomValue(e * 1.0, e * 1.25);
+      } else {
+        out[k] = randomValue(e * 1.2, e * 1.5);
+      }
+    }
+  }
+  return out;
 }
 
 export type VocStatus = "normal" | "elevated" | "high";
@@ -104,14 +178,19 @@ export type VocMeta = {
 };
 
 export const VOC_META: Record<string, VocMeta> = {
-  Benzene:       { unit: "ppm", thresholds: [0.1, 0.5],   source: "ควันบุหรี่ / น้ำมันเชื้อเพลิง", iarc: "IARC กลุ่ม 1" },
-  Formaldehyde:  { unit: "ppm", thresholds: [0.05, 0.1],  source: "เฟอร์นิเจอร์ MDF / ควันบุหรี่",  iarc: "IARC กลุ่ม 1" },
-  Toluene:       { unit: "ppm", thresholds: [0.2, 1.0],   source: "ทินเนอร์ / สีทาบ้าน / โรงงาน" },
-  Acetone:       { unit: "ppm", thresholds: [0.8, 2.0],   source: "เมตาบอลิซึม / น้ำยาล้างเล็บ" },
-  Isoprene:      { unit: "ppm", thresholds: [0.2, 0.45],  source: "Biomarker มะเร็งปอด" },
-  Pentane:       { unit: "ppm", thresholds: [0.2, 0.5],   source: "Biomarker oxidative stress" },
-  Hexanal:       { unit: "ppm", thresholds: [0.05, 0.15], source: "Biomarker มะเร็งปอด (lipid peroxidation)" },
-  "2-Butanone":  { unit: "ppm", thresholds: [0.1, 0.3],   source: "Biomarker มะเร็งปอด" },
+  TGS2600: { unit: "ppm", thresholds: [20, 80], source: "เซนเซอร์ TGS2600 วัดควันและไอระเหย" },
+  TGS2602: { unit: "ppm", thresholds: [10, 50], source: "เซนเซอร์ TGS2602 เฝ้าดูควันบุหรี่และกลิ่นไม่พึงประสงค์" },
+  TGS2611: { unit: "ppm", thresholds: [8, 40], source: "เซนเซอร์ TGS2611 สำหรับแก๊สพิษในอากาศ" },
+  TGS2620: { unit: "ppm", thresholds: [10, 45], source: "เซนเซอร์ TGS2620 ตรวจแก๊สอินทรีย์ระเหยง่าย" },
+  TGS2612: { unit: "ppm", thresholds: [12, 55], source: "เซนเซอร์ TGS2612 วัดไอระเหยจากสารเคมี" },
+  TGS2622: { unit: "ppm", thresholds: [5, 25], source: "เซนเซอร์ TGS2622 ตรวจกลิ่นแอมโมเนียและสารระเหย" },
+  MQ2:     { unit: "ppm", thresholds: [100, 300], source: "เซนเซอร์ MQ2 สำหรับไฮโดรคาร์บอนและควัน" },
+  MQ3:     { unit: "ppm", thresholds: [30, 120], source: "เซนเซอร์ MQ3 สำหรับแอลกอฮอล์และไอระเหย" },
+  MQ4:     { unit: "ppm", thresholds: [40, 160], source: "เซนเซอร์ MQ4 ตรวจมีเทนและแก๊สติดไฟ" },
+  MQ5:     { unit: "ppm", thresholds: [20, 90], source: "เซนเซอร์ MQ5 สำหรับก๊าซโพรเพนและไฮโดรคาร์บอน" },
+  MQ7:     { unit: "ppm", thresholds: [0.5, 2.5], source: "เซนเซอร์ MQ7 ตรวจคาร์บอนมอนอกไซด์จากควัน" },
+  MQ9:     { unit: "ppm", thresholds: [15, 75], source: "เซนเซอร์ MQ9 สำหรับก๊าซบิวเทนและโพรเพน" },
+  MQ135:   { unit: "ppm", thresholds: [30, 150], source: "เซนเซอร์ MQ135 สำหรับแก๊สพิษและมลพิษอากาศ" },
 };
 
 export function vocStatus(name: string, value: number): VocStatus {

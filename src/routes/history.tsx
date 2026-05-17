@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/history")({
-  head: () => ({ meta: [{ title: "ประวัติสุขภาพ — Onco-Voice Expert" }] }),
+  head: () => ({ meta: [{ title: "ประวัติสุขภาพ — VitalGuard Expert" }] }),
   component: HistoryPage,
 });
 

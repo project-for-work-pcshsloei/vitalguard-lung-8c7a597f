@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Stethoscope } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "เข้าสู่ระบบ — Onco-Voice Expert" }] }),
+  head: () => ({ meta: [{ title: "เข้าสู่ระบบ — VitalGuard Expert" }] }),
   component: AuthPage,
 });
 
@@ -52,7 +52,7 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-primary">
           <Stethoscope className="h-7 w-7" />
-          <span className="text-xl font-semibold">Onco-Voice Expert</span>
+          <span className="text-xl font-semibold">VitalGuard Expert</span>
         </Link>
         <div className="rounded-2xl bg-card p-8 shadow-[var(--shadow-soft)]">
           <Tabs defaultValue="login">

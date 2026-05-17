@@ -7,7 +7,7 @@ import { Stethoscope, Wind, ShieldCheck, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Onco-Voice Expert — คัดกรองความเสี่ยงมะเร็งปอด" },
+      { title: "VitalGuard Expert — คัดกรองความเสี่ยงมะเร็งปอด" },
       { name: "description", content: "ระบบคัดกรองความเสี่ยงมะเร็งปอดเบื้องต้น โดยวิเคราะห์ค่าสารระเหย VOCs ร่วมกับพฤติกรรมและสิ่งแวดล้อม" },
     ],
   }),
@@ -27,7 +27,7 @@ function Landing() {
       <header className="container mx-auto flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2 text-primary">
           <Stethoscope className="h-7 w-7" />
-          <span className="text-xl font-semibold">Onco-Voice Expert</span>
+          <span className="text-xl font-semibold">VitalGuard Expert</span>
         </div>
         <Link to="/auth"><Button variant="outline">เข้าสู่ระบบ</Button></Link>
       </header>
